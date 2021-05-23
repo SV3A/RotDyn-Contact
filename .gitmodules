@@ -1,0 +1,3 @@
+[submodule "RotDyn-FE"]
+	path = RotDyn-FE
+	url = https://github.com/SV3A/RotDyn-FE
