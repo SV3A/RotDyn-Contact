@@ -1,5 +1,17 @@
+clear all
+close all
+
+%/ Setup /
 pathSetup
 
+
+%/ Analyses flags /
+fEigVals    = 1;
+fLambdas    = 1;
+fModeShapes = 1;
+
+
+%/ Script Setup /
 Omega = 17*2*pi/60; % [rad/s]
 unbalance = 0.0767*0.001; % [kg/m]
 
@@ -66,6 +78,12 @@ sphBearingDamp = Damper(100);
 
 coupling = Disc(0.429, 172380e-9, 240578.44e-9, 0);
 
+% FREE-FREE overwrite
+%pmbStiff.localK = [1e3   0
+%                    0   1e3];
+%sphBearingStiff.localK = [1e3   0
+%                           0   1e3];
+
 
 rotMod.addNodeComponent(6, disc)
 
@@ -82,4 +100,30 @@ rotMod.addNodeComponent(17, coupling)
 
 
 rotMod.printInfo()
+
+% Export rotor and clean up
+rotSys = rotMod.export();
+delete(rotMod);
+
+
+% Perform modal analysis
+
+if fEigVals || fLambdas || fModeShapes
+  es1 = solveEVP(rotSys, Omega, 'general', 'show-gist');
+  es2 = solveEVP(rotSys, Omega, 'std',     'show-gist');
+
+  if fLambdas == 1
+    es1.lambdas
+    es2.lambdas
+  end
+
+  if fModeShapes == 1
+    modPlt = ModePlotter(es1, rotSys.numDof);
+
+    modPlt.plotModeShape(2);
+    modPlt.plotModeShape(3);
+    modPlt.plotModeShape(6);
+    modPlt.plotModeShape(8);
+  end
+end
 
